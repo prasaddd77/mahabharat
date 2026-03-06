@@ -1,0 +1,64 @@
+06-Mar-2026 06:21:02 INFO Starting Bamboo build pipeline: service-order-management
+
+06-Mar-2026 06:21:05 INFO Cloning repository from Git
+06-Mar-2026 06:21:08 INFO Repository cloned successfully
+
+06-Mar-2026 06:21:12 INFO Starting Maven build
+
+06-Mar-2026 06:23:18 ERROR Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:compile (default-compile) on project service-order-management-service-co: Compilation failure
+06-Mar-2026 06:23:18 ERROR /home/bamboo/bamboo-agent-home/xml-data/build-dir/CSIOSM-SOMCOUP11-JOB1/src/main/java/com/singtel/integration/commons/utils/HttpEntityUtils.java:[109,27] cannot find symbol
+06-Mar-2026 06:23:18 ERROR symbol:   method encodeToString(byte[])
+06-Mar-2026 06:23:18 ERROR location: class java.util.Base64
+06-Mar-2026 06:23:18 ERROR -> [Help 1]
+
+06-Mar-2026 06:23:19 ERROR Build failed due to compilation error
+
+------------------------------------------------------------
+
+06-Mar-2026 06:30:01 INFO Starting Bamboo build pipeline: payment-service
+
+06-Mar-2026 06:30:04 INFO Pulling docker image: maven:3.9.5-jdk-11
+
+06-Mar-2026 06:30:20 WARNING Disk usage on build agent is above threshold
+
+06-Mar-2026 06:30:21 ERROR Build failed: No space left on device
+06-Mar-2026 06:30:21 ERROR Agent disk usage reached 148GB of 150GB
+
+06-Mar-2026 06:30:21 ERROR Failed to write artifact to workspace
+
+------------------------------------------------------------
+
+06-Mar-2026 07:02:10 INFO Starting Bamboo build pipeline: billing-service
+
+06-Mar-2026 07:02:15 INFO Running unit tests
+
+06-Mar-2026 07:05:48 WARNING Zombie process detected on build agent
+06-Mar-2026 07:05:48 WARNING PID 22341 still running from previous build
+
+06-Mar-2026 07:05:48 ERROR Build agent unhealthy
+
+06-Mar-2026 07:05:49 ERROR Pipeline aborted due to agent health check failure
+
+------------------------------------------------------------
+
+06-Mar-2026 07:20:01 INFO Starting Bamboo build pipeline: inventory-service
+
+06-Mar-2026 07:20:05 INFO Restoring Maven dependencies
+
+06-Mar-2026 07:20:45 WARNING Maven dependency cache size exceeded limit
+
+06-Mar-2026 07:20:46 ERROR Cache overflow detected
+06-Mar-2026 07:20:46 ERROR Failed to restore dependencies
+
+06-Mar-2026 07:20:47 ERROR Build terminated
+
+------------------------------------------------------------
+
+06-Mar-2026 07:45:12 INFO Starting Bamboo build pipeline: order-service
+
+06-Mar-2026 07:45:16 INFO Waiting for build agent
+
+06-Mar-2026 07:50:48 WARNING Long build queue detected
+06-Mar-2026 07:50:48 WARNING No available build agents
+
+06-Mar-2026 07:50:49 ERROR Build timeout waiting for agent
