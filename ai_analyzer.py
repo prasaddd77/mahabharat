@@ -1,25 +1,57 @@
-import ollama
+from groq import Groq
+import os
+from dotenv import load_dotenv
+
+# load environment variables from .env
+load_dotenv()
+
+# Best practice: store key as environment variable
+client = Groq(
+    api_key=os.getenv("GROQ_API_KEY")
+)
 
 def analyze_logs(file):
 
     with open(file, "r") as f:
         logs = f.read()
 
-    response = ollama.chat(
-        model="mistral",
+    response = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
         messages=[
             {
                 "role": "system",
-                "content": "You are a DevOps SRE who analyzes CI/CD pipeline logs and suggests root cause and fixes."
+                "content": "You are an expert DevOps SRE who analyzes CI/CD pipeline logs and identifies root causes and remediation steps."
             },
             {
                 "role": "user",
-                "content": f"Analyze these pipeline logs and suggest root cause and remediation:\n{logs}"
+                "content": f"Analyze these pipeline logs and suggest root cause and remediation:\n\n{logs}"
             }
-        ]
+        ],
+        temperature=0.2
     )
 
-    return response["message"]["content"]
+    return response.choices[0].message.content
+
+# def analyze_logs(file):
+
+#     with open(file, "r") as f:
+#         logs = f.read()
+
+#     response = ollama.chat(
+#         model="llama3",
+#         messages=[
+#             {
+#                 "role": "system",
+#                 "content": "You are a DevOps SRE who analyzes CI/CD pipeline logs and suggests root cause and fixes."
+#             },
+#             {
+#                 "role": "user",
+#                 "content": f"Analyze these pipeline logs and suggest root cause and remediation:\n{logs}"
+#             }
+#         ]
+#     )
+
+#     return response["message"]["content"]
 
 # from openai import OpenAI
 # import certifi
