@@ -15,7 +15,7 @@ async def analyze_and_heal(log_file_path: str):
     #     print("ERROR: GEMINI_API_KEY environment variable not set.")
     #     sys.exit(1)
 
-    client = genai.Client(api_key="AIzaSyA5AG5Y-otZKbdaTV9SRCuAhyOZMKH3nz0")
+    client = genai.Client(api_key="YOUR_GEMINI_API_KEY_HERE")
     
     # Path to the MCP server script
     server_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mcp_server.py")
