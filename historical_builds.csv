@@ -1,0 +1,6 @@
+plan_key,build_number,disk_used_gb,duration_sec,status
+billing-service,101,142,300,SUCCESS
+billing-service,102,145,310,SUCCESS
+billing-service,103,148,315,FAILED
+inventory-service,55,80,120,SUCCESS
+service-order-management,12,65,200,SUCCESS
