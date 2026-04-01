@@ -1,6 +1,8 @@
 import streamlit as st
 import subprocess
 import os
+import re
+import json
 
 st.set_page_config(page_title="Virtual SRE Dashboard", layout="wide")
 
@@ -14,17 +16,17 @@ with col1:
     st.subheader("Failed Pipelines Queue")
     selected_log = st.radio(
         "Select Pipeline to Analyze:",
-        ["pipeline_logs.txt (Disk & Zombie Issues)", "k8_issue.txt (Code/Compilation Issue)"]
+        ["pipeline_logs.txt", "dual_failure_logs.txt", "queued_pipelines.txt"]
     )
     
     # Map selection to actual file
     log_file_map = {
-        "pipeline_logs.txt (Disk & Zombie Issues)": "pipeline_logs_1.txt",
-        "iq_issue.txt (Code/Compilation Issue)": "iq_issue.txt",
-        "k8_issue.txt (Code/Compilation Issue)": "k8_issue.txt"
+        "pipeline_logs.txt": "pipeline_logs_1.txt",
+        "dual_failure_logs.txt": "dual_failure_logs.txt",
+        "queued_pipelines.txt": "queued_pipelines.txt"
     }
     target_file = log_file_map[selected_log]
-    
+
     plan_key = "billing-service"
     agent_id = "sbcm-prod-ci-d71dz"
     
@@ -42,10 +44,30 @@ with col1:
                 text=True,
                 env=env
             )
-            
+            # ... inside your dashboard.py after result = subprocess.run(...) ...
             st.session_state.run_result = result.stdout
-            if result.stderr:
-                st.session_state.run_result += f"\nERRORS:\n{result.stderr}"
+            
+
+            # Extract the JSON block for the UI metrics
+            json_match = re.search(r'```json\n(.*?)\n```', result.stdout, re.DOTALL)
+            if json_match:
+                try:
+                    metrics = json.loads(json_match.group(1))
+                    
+                    # Display the Operational Intelligence Dashboard
+                    st.subheader("📊 Operational Intelligence Metrics")
+                    m1, m2, m3 = st.columns(3)
+                    m1.metric("Pipeline Health Score", f"{metrics.get('health_score', 0)}/100")
+                    m2.metric("DevOps Hours Reclaimed", f"{metrics.get('reclaimed_hours', 0)} hrs")
+                    m3.metric("Compute Costs Saved", f"${metrics.get('saved_compute_costs_usd', 0)}")
+                    
+                    st.info(f"**Bottleneck Insight:** {metrics.get('bottleneck_insight', 'N/A')}")
+                    st.success(f"**Autonomous Actions Taken:** {metrics.get('autonomous_actions_taken', 'N/A')}")
+                    
+                except json.JSONDecodeError:
+                    pass
+                    if result.stderr:
+                        st.session_state.run_result += f"\nERRORS:\n{result.stderr}"
 
 with col2:
     st.subheader("SRE Engine Output")
