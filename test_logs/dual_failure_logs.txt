@@ -1,0 +1,20 @@
+simple	25-Mar-2026 09:00:57	Build ECOM - ECOM_EXTERNAL_MOCK_TechRefresh - ecom_external_mock_testing_100 - default #10 (ECOM-ECMT5-JOB1-10) is being prepared for building on agent eit-ecom-ci-6zkt6, bamboo version: 9.2.6
+simple	25-Mar-2026 09:00:57	Remote agent on host eit-ecom-ci-6zkt6
+simple	25-Mar-2026 09:00:58	[PRE-FLIGHT] Checking agent health...
+build	25-Mar-2026 09:00:59	[WARNING] Orphaned processes detected on agent eit-ecom-ci-6zkt6. Zombie PIDs consuming background resources.
+simple	25-Mar-2026 09:01:00	Build working directory is /home/bamboo/bamboo-agent-home/xml-data/build-dir/ECOM-ECMT5-JOB1
+simple	25-Mar-2026 09:01:00	Executing build ECOM - ECOM_EXTERNAL_MOCK_TechRefresh - ecom_external_mock_testing_100 - default #10 (ECOM-ECMT5-JOB1-10)
+simple	25-Mar-2026 09:01:02	Starting task 'Maven Compile and Package' of type 'com.atlassian.bamboo.plugins.maven:task.builder.mvn3'
+build	25-Mar-2026 09:01:05	[INFO] Scanning for projects...
+build	25-Mar-2026 09:01:10	[INFO] Building ECOM External Mock 2.0.1-SNAPSHOT
+build	25-Mar-2026 09:05:30	[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-web/3.2.0/spring-boot-starter-web-3.2.0.jar
+build	25-Mar-2026 09:10:45	[WARNING] Free disk space is critically low.
+build	25-Mar-2026 09:12:12	[INFO] Building jar: /home/bamboo/bamboo-agent-home/xml-data/build-dir/ECOM-ECMT5-JOB1/target/ecom-external-mock-2.0.1-SNAPSHOT.jar
+error	25-Mar-2026 09:12:25	[ERROR] Failed to execute goal org.apache.maven.plugins:maven-jar-plugin:3.3.0:jar (default-jar) on project ecom-external-mock: Error assembling JAR: java.io.IOException: No space left on device -> [Help 1]
+error	25-Mar-2026 09:12:25	[ERROR] Agent disk usage reached maximum quota. 
+error	25-Mar-2026 09:12:25	java.io.IOException: No space left on device
+simple	25-Mar-2026 09:12:28	Finished task 'Maven Compile and Package' with result: Failed
+error	25-Mar-2026 09:12:28	Build agent unhealthy: Disk threshold exceeded and zombie processes detected.
+simple	25-Mar-2026 09:12:29	Finalising the build...
+simple	25-Mar-2026 09:12:29	Stopping timer.
+simple	25-Mar-2026 09:12:29	Build ECOM-ECMT5-JOB1-10 completed.
