@@ -1,1 +1,15 @@
-Error connecting to local Jenkins: HTTPConnectionPool(host='localhost', port=8080): Max retries exceeded with url: /job/Billing-Service-Core/api/json (Caused by NewConnectionError("HTTPConnection(host='localhost', port=8080): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+Started by user root
+Running as SYSTEM
+Building in workspace /var/jenkins_home/workspace/virtual-sre-pipeline
+[virtual-sre-pipeline] $ /bin/sh /tmp/jenkins15629232361474139524.sh
+Starting pipeline...
+[PRE-FLIGHT] Checking agent health...
+[WARNING] Orphaned processes detected on agent. Zombie PIDs consuming background resources.
+[WARNING] Free disk space is critically low.
+[INFO] Scanning for projects...
+[INFO] Downloading from central: spring-boot-starter-web-3.2.0.jar
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-jar-plugin... java.io.IOException: No space left on device
+Build agent unhealthy: Disk threshold exceeded and zombie processes detected.
+Process leaked file descriptors. See https://www.jenkins.io/redirect/troubleshooting/process-leaked-file-descriptors for more information
+Build step 'Execute shell' marked build as failure
+Finished: FAILURE

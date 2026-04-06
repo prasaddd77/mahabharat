@@ -12,14 +12,16 @@ mcp = FastMCP("VirtualSRE_MCP")
 def check_agent_disk_space(agent_id: str, mount_path: str = "/") -> str:
     """Checks the real-time disk space of the agent."""
     try:
-        base_dir = os.path.join(os.getcwd(), "mock_agent_workspace")
-        if not os.path.exists(base_dir):
-            return "Agent workspace empty. Free Space = 250MB."
+        # Check both directories Jenkins is bloating
+        m2_path = os.path.expanduser("~/.m2/repository/junk")
+        bamboo_path = os.path.expanduser("~/mock_bamboo_agent/xml-data/build-dir")
         
-        # Calculate the actual physical size of our mock folder
-        total_size_bytes = sum(os.path.getsize(os.path.join(dirpath, filename)) 
-                               for dirpath, _, filenames in os.walk(base_dir) 
-                               for filename in filenames)
+        total_size_bytes = 0
+        for path in [m2_path, bamboo_path]:
+            if os.path.exists(path):
+                total_size_bytes += sum(os.path.getsize(os.path.join(dirpath, filename)) 
+                                       for dirpath, _, filenames in os.walk(path) 
+                                       for filename in filenames)
         
         used_mb = total_size_bytes / (1024 * 1024)
         total_quota_mb = 250 # Our simulated agent maximum capacity
@@ -182,9 +184,8 @@ def clear_maven_dependency_cache(agent_id: str) -> str:
 @mcp.tool()
 def clean_bamboo_workspaces(agent_id: str) -> str:
     """Actually deletes stale Bamboo workspaces from the OS to free up disk space."""
-    workspace_path = os.path.join(os.getcwd(), "mock_agent_workspace", "xml-data", "build-dir")
+    workspace_path = os.path.expanduser("~/mock_bamboo_agent/xml-data/build-dir")
     if os.path.exists(workspace_path):
-        import shutil
         shutil.rmtree(workspace_path) # Physically deletes the mock workspaces
         return f"[Autonomous Action] Successfully purged stale Bamboo workspaces on {agent_id}."
     return f"[Action Skipped] No workspaces found to clean on {agent_id}."
