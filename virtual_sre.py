@@ -22,7 +22,7 @@ async def analyze_and_heal(log_file_path: str):
     
     # Configure connection to the local MCP server
     server_params = StdioServerParameters(
-        command="python",
+        command="python3",
         args=[server_script]
     )
     
