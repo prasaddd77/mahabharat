@@ -288,7 +288,7 @@ if __name__ == "__main__":
 #     #     print("ERROR: GEMINI_API_KEY environment variable not set.")
 #     #     sys.exit(1)
 
-#     client = genai.Client(api_key="AIzaSyBhNjFSb_gAAds0Kjs2dITu5GD4ulaCuMs")
+#     client = genai.Client(api_key="")
     
 #     # Path to the MCP server script
 #     server_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mcp_server.py")
