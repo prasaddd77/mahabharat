@@ -10,44 +10,63 @@ mcp = FastMCP("VirtualSRE_MCP")
 
 @mcp.tool()
 def check_agent_disk_space(agent_id: str, mount_path: str = "/") -> str:
-    """Checks the real-time disk space of the agent."""
-    try:
-        # Check both directories Jenkins is bloating
-        m2_path = os.path.expanduser("~/.m2/repository/junk")
-        bamboo_path = os.path.expanduser("~/mock_bamboo_agent/xml-data/build-dir")
-        
-        total_size_bytes = 0
-        for path in [m2_path, bamboo_path]:
-            if os.path.exists(path):
-                total_size_bytes += sum(os.path.getsize(os.path.join(dirpath, filename)) 
-                                       for dirpath, _, filenames in os.walk(path) 
-                                       for filename in filenames)
-        
-        used_mb = total_size_bytes / (1024 * 1024)
-        total_quota_mb = 250 # Our simulated agent maximum capacity
-        free_mb = total_quota_mb - used_mb
-        used_percentage = (used_mb / total_quota_mb) * 100
-        
-        return f"Agent {agent_id} Current State: Quota = {total_quota_mb}MB, Used = {used_mb:.1f}MB, Free = {free_mb:.1f}MB. Currently {used_percentage:.1f}% full."
-    except Exception as e:
-        return f"Failed to check disk space: {str(e)}"
-    # """
-    # Checks the real-time total and free disk space (in GB) of the specified build agent.
-    # Use this to establish the current baseline before a batch of pipelines executes.
-    # """
-    # try:
-    #     # For a local hackathon demo, this checks the local drive. 
-    #     # In production, this would map to your specific RHEL mount points (e.g., "/opt/bamboo-agent")
-    #     total, used, free = shutil.disk_usage(mount_path)
-        
-    #     total_gb = total // (2**30)
-    #     free_gb = free // (2**30)
-    #     used_percentage = (used / total) * 100
-        
-    #     return f"Agent {agent_id} Current State: Total Space = {total_gb}GB, Free Space = {free_gb}GB. Currently {used_percentage:.1f}% full."
-    # except Exception as e:
-    #     return f"Failed to check disk space on {agent_id}: {str(e)}"
+    """Checks the real-time disk space of the agent directly inside the Podman container."""
     
+    # IMPORTANT: Replace 'my-jenkins' with the actual name or ID of your Podman container
+    container_name = "jenkins" 
+    target_dir = "/var/jenkins_home/.m2/repository/junk"
+    
+    try:
+        # Executes: podman exec my-jenkins du -sm /var/jenkins_home/.m2/repository/junk
+        result = subprocess.run(
+            ["podman", "exec", container_name, "du", "-sm", target_dir],
+            capture_output=True, 
+            text=True,
+            check=True
+        )
+        
+        # The output of du -sm looks like: "300    /var/jenkins_home/..."
+        # We split the string by spaces and grab the first element (the number)
+        output_str = result.stdout.strip()
+        used_mb = 0.0
+        if output_str:
+            used_mb = float(output_str.split()[0])
+            
+    except subprocess.CalledProcessError as e:
+        # If the directory doesn't exist yet (before the pipeline runs or after it's cleaned), 
+        # the 'du' command will throw an error. This is totally fine, it just means 0MB are used!
+        return f"Podman Error: The 'du' command failed. Details: {e.stderr.strip() if e.stderr else str(e)}"
+    except Exception as e:
+        return f"Failed to check disk space via Podman: {str(e)}"
+        
+    total_quota_mb = 250 # Our simulated agent maximum capacity
+    free_mb = total_quota_mb - used_mb
+    used_percentage = (used_mb / total_quota_mb) * 100
+    
+    return f"Agent {agent_id} Current State: Quota = {total_quota_mb}MB, Used = {used_mb:.1f}MB, Free = {free_mb:.1f}MB. Currently {used_percentage:.1f}% full."
+# @mcp.tool()
+# def check_agent_disk_space(agent_id: str, mount_path: str = "/") -> str:
+#     """Checks the real-time disk space of the agent."""
+#     try:
+#         # Check both directories Jenkins is bloating
+#         m2_path = os.path.expanduser("~/.m2/repository/junk")
+#         bamboo_path = os.path.expanduser("~/mock_bamboo_agent/xml-data/build-dir")
+        
+#         total_size_bytes = 0
+#         for path in [m2_path, bamboo_path]:
+#             if os.path.exists(path):
+#                 total_size_bytes += sum(os.path.getsize(os.path.join(dirpath, filename)) 
+#                                        for dirpath, _, filenames in os.walk(path) 
+#                                        for filename in filenames)
+        
+#         used_mb = total_size_bytes / (1024 * 1024)
+#         total_quota_mb = 250 # Our simulated agent maximum capacity
+#         free_mb = total_quota_mb - used_mb
+#         used_percentage = (used_mb / total_quota_mb) * 100
+        
+#         return f"Agent {agent_id} Current State: Quota = {total_quota_mb}MB, Used = {used_mb:.1f}MB, Free = {free_mb:.1f}MB. Currently {used_percentage:.1f}% full."
+#     except Exception as e:
+#         return f"Failed to check disk space: {str(e)}"
 
 @mcp.tool()
 def predict_agent_resources(plan_key: str) -> str:
@@ -74,79 +93,7 @@ def predict_agent_resources(plan_key: str) -> str:
         return f"Historical expected disk footprint for {plan_key} is {simulated_disk_mb}MB."
     except Exception as e:
         return f"Error accessing historical data: {str(e)}"
-    # """
-    # Predicts the required disk footprint (in GB) for a specific CI/CD build based on historical data.
-    # Call this for EACH pipeline in the queue to calculate the cumulative expected footprint.
-    # """
-    # try:
-    #     base_dir = os.path.dirname(os.path.abspath(__file__))
-    #     csv_path = os.path.join(base_dir, "historical_builds.csv")
-        
-    #     df = pd.read_csv(csv_path)
-        
-    #     # Deterministically map the real Bamboo plan_key to a Kaggle pipeline_id
-    #     unique_pipes = df["pipeline_id"].unique()
-    #     numeric_hash = int(hashlib.md5(plan_key.encode('utf-8')).hexdigest(), 16)
-    #     mapped_pipe_id = unique_pipes[numeric_hash % len(unique_pipes)]
-        
-    #     plan_data = df[df["pipeline_id"] == mapped_pipe_id]
-        
-    #     if plan_data.empty:
-    #         return f"No historical data found for {plan_key}. Defaulting expected footprint to 5GB."
-        
-    #     # Hackathon Conversion: Since the Kaggle dataset uses memory_usage_mb, 
-    #     # we mathematically simulate a disk footprint (GB) for the demo.
-    #     # Example: 4000MB memory usage implies a heavy build, translating to roughly 8GB of disk I/O.
-    #     max_metric = plan_data["memory_usage_mb"].tail(5).max()
-    #     simulated_disk_gb = max(2, int((max_metric / 1024) * 2.5)) 
-        
-    #     return f"Historical expected disk footprint for {plan_key} is {simulated_disk_gb}GB."
-    # except Exception as e:
-    #     return f"Error accessing historical data: {str(e)}"
-
-# @mcp.tool()
-# def predict_agent_resources(plan_key: str) -> str:
-#     """Predicts the required disk space (in GB) for a CI/CD build based on historical data."""
-#     try:
-#         # Resolve path so it works regardless of where it's called from
-#         base_dir = os.path.dirname(os.path.abspath(__file__))
-#         csv_path = os.path.join(base_dir, "historical_builds.csv")
-        
-#         df = pd.read_csv(csv_path)
-#         plan_data = df[df["plan_key"] == plan_key]
-#         if plan_data.empty:
-#             return "No historical data found. Defaulting to 150GB."
-        
-#         # Heuristic: max of last 5 builds + 15% safety buffer
-#         max_disk = plan_data["disk_used_gb"].tail(5).max()
-#         recommended = int(max_disk * 1.15)
-#         return f"Historical max is {max_disk}GB. Recommended dynamic allocation for {plan_key}: {recommended}GB."
-#     except Exception as e:
-#         return f"Error accessing historical data: {str(e)}"
-
-# @mcp.tool()
-# def predict_agent_resources(plan_key: str) -> str:
-#     """Predicts the required memory (in MB) for a CI/CD build based on historical data."""
-#     try:
-#         # Resolve path so it works regardless of where it's called from
-#         base_dir = os.path.dirname(os.path.abspath(__file__))
-#         csv_path = os.path.join(base_dir, "historical_builds.csv")
-        
-#         df = pd.read_csv(csv_path)
-        
-#         # Match the LLM's plan_key to the new dataset's pipeline_id column
-#         plan_data = df[df["pipeline_id"] == plan_key]
-        
-#         if plan_data.empty:
-#             return "No historical data found. Defaulting to 4096MB (4GB)."
-        
-#         # Heuristic: max memory of last 5 builds + 15% safety buffer
-#         max_memory = plan_data["memory_usage_mb"].tail(5).max()
-#         recommended_mb = int(max_memory * 1.15)
-        
-#         return f"Historical max memory is {max_memory}MB. Recommended dynamic memory allocation for {plan_key}: {recommended_mb}MB."
-#     except Exception as e:
-#         return f"Error accessing historical data: {str(e)}"
+ 
 
 @mcp.tool()
 def cleanup_docker_volumes(agent_id: str) -> str:
@@ -160,26 +107,33 @@ def cleanup_docker_volumes(agent_id: str) -> str:
     reclaimed_gb = 18 
     return f"[Autonomous Action] Successfully pruned old Docker volumes on {agent_id}. Reclaimed {reclaimed_gb}GB of disk space."
 
+
 @mcp.tool()
 def clear_maven_dependency_cache(agent_id: str) -> str:
-    """Actually deletes the bloated Maven dependency cache directory from the OS."""
-    #maven_path = os.path.join(os.getcwd(), "mock_agent_workspace", ".m2")
-    maven_path = os.path.expanduser("~/.m2/repository/junk")
-    if os.path.exists(maven_path):
-        shutil.rmtree(maven_path) # Physically deletes the folder and files!
-        return f"[Autonomous Action] Successfully purged Maven cache on {agent_id}. Disk space reclaimed instantly."
-    return f"[Action Skipped] Maven cache not found on {agent_id}."
-    # """
-    # Clears the bloated Maven dependency cache (~/.m2/repository) on the build agent.
-    # """
-    # print(f"\n[EXECUTION] Running 'rm -rf ~/.m2/repository/com/internal/*' on {agent_id}...")
-    # reclaimed_gb = 12
-    # return f"[Autonomous Action] Successfully cleared Maven cache on {agent_id}. Reclaimed {reclaimed_gb}GB of disk space."
-
+    """Reaches into the Jenkins Podman container and deletes the cache."""
+    
+    # IMPORTANT: Replace 'my-jenkins' with the actual name or ID of your Podman container
+    container_name = "jenkins" 
+    target_dir = "/var/jenkins_home/.m2/repository/junk"
+    
+    try:
+        # Executes: podman exec my-jenkins sh -c "rm -rf /var/jenkins_home/.m2/repository/junk/*"
+        subprocess.run(
+            ["podman", "exec", container_name, "sh", "-c", f"rm -rf {target_dir}/*"], 
+            check=True
+        )
+        return f"[Autonomous Action] Successfully purged Maven cache on {agent_id} directly inside the Podman container."
+    except subprocess.CalledProcessError as e:
+        return f"Failed to clear cache inside Podman container: {e}"
 # @mcp.tool()
 # def clear_maven_dependency_cache(agent_id: str) -> str:
-#     """Clears the bloated Maven dependency cache on the build agent."""
-#     return f"[Autonomous Action] Successfully cleared ~/.m2/repository on agent {agent_id}. Reclaimed 45GB."
+#     """Actually deletes the bloated Maven dependency cache directory from the OS."""
+#     #maven_path = os.path.join(os.getcwd(), "mock_agent_workspace", ".m2")
+#     maven_path = os.path.expanduser("~/.m2/repository/junk")
+#     if os.path.exists(maven_path):
+#         shutil.rmtree(maven_path) # Physically deletes the folder and files!
+#         return f"[Autonomous Action] Successfully purged Maven cache on {agent_id}. Disk space reclaimed instantly."
+#     return f"[Action Skipped] Maven cache not found on {agent_id}."
 
 @mcp.tool()
 def clean_bamboo_workspaces(agent_id: str) -> str:

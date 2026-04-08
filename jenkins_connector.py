@@ -3,7 +3,7 @@ import base64
 
 JENKINS_URL = "http://localhost:8080"
 JENKINS_USER = "root" # e.g., "admin"
-JENKINS_TOKEN = "1150869c09c1d91f816929a36f3daa7cf6"  # The token you just generated
+JENKINS_TOKEN = "11a5990682a42898140223a5a21b5aa8d3"  # The token you just generated
 AUTH = (JENKINS_USER, JENKINS_TOKEN)
 
 def get_all_jenkins_jobs():

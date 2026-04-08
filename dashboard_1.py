@@ -169,24 +169,17 @@ def load_all_reports():
                 except json.JSONDecodeError:
 
                     pass
-
             disk_info = {"quota": 0, "used": 0, "free": 0, "percent": 0}
-
-            disk_match = re.search(r'Quota = ([\d.]+)MB, Used = ([\d.]+)MB, Free = ([\d.]+)MB\. Currently ([\d.]+)% full', content)
-
+            # Added -? to allow negative numbers to be parsed correctly
+            disk_match = re.search(r'Quota = (-?[\d.]+)MB, Used = (-?[\d.]+)MB, Free = (-?[\d.]+)MB\. Currently (-?[\d.]+)% full', content)
             if disk_match:
-
                 disk_info = {
-
                     "quota": float(disk_match.group(1)),
-
                     "used": float(disk_match.group(2)),
-
                     "free": float(disk_match.group(3)),
-
                     "percent": float(disk_match.group(4))
-
                 }
+                
 
             predicted_footprint = 0
 
